@@ -220,6 +220,32 @@ class TestSearch(TestCase):
             ).arriving(
                 "JNB",
             ).departing(
+                "JNB", day=20,
+            ).arriving(
+                "JFK", "EWR",
+            ).stopover("CPT"),
+            itinerary().departing(
+                "JFK", "EWR",
+            ).arriving(
+                "JNB",
+            ).departing(
+                "JNB",
+            ).arriving(
+                "CPT",
+            ).departing(
+                "CPT", day=20,
+            ).arriving(
+                "JFK", "EWR",
+            ),
+        )
+
+    def test_itinerary_stopover_with_dates(self):
+        self.assertEqual(
+            itinerary().departing(
+                "JFK", "EWR",
+            ).arriving(
+                "JNB",
+            ).departing(
                 "JNB",
             ).arriving(
                 "JFK", "EWR",

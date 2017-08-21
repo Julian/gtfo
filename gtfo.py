@@ -152,9 +152,9 @@ class _ItinerarySearch(object):
             *airports
         ).departing(
             *airports,
-            year=kwargs.pop("end_year", None),
-            month=kwargs.pop("end_month", None),
-            day=kwargs.pop("end_day", None),
+            year=kwargs.pop("end_year", last.date and last.date.year),
+            month=kwargs.pop("end_month", last.date and last.date.month),
+            day=kwargs.pop("end_day", last.date and last.date.day),
             **kwargs
         ).arriving(
             *last._arriving
