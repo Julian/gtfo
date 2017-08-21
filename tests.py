@@ -46,13 +46,39 @@ class TestSearch(TestCase):
     def test_roundtrip_partial_date(self):
         today = date.today()
         self.assertEqual(
-            roundtrip().departing("JFK", day=6).returning("JNB", month=3),
+            roundtrip().departing("JFK", day=6).returning("JNB", day=15),
             roundtrip().departing(
                 "JFK",
                 year=today.year,
                 month=today.month,
                 day=6,
-            ).returning("JNB", year=today.year, month=3, day=today.day),
+            ).returning(
+                "JNB",
+                year=today.year,
+                month=today.month,
+                day=15,
+            ),
+        )
+
+    def test_roundtrip_partial_date_uses_departure_date(self):
+        today = date.today()
+        self.assertEqual(
+            roundtrip().departing(
+                "JFK", month=2, day=3,
+            ).returning(
+                "JNB", day=10,
+            ),
+            roundtrip().departing(
+                "JFK",
+                year=today.year,
+                month=2,
+                day=3,
+            ).returning(
+                "JNB",
+                year=today.year,
+                month=2,
+                day=10,
+            ),
         )
 
     def test_roundtrip_return_date(self):
@@ -101,6 +127,29 @@ class TestSearch(TestCase):
                 month=today.month,
                 day=6,
             ).arriving("JNB"),
+        )
+
+    def test_roundtrip_partial_date_uses_departure_date(self):
+        today = date.today()
+        self.assertEqual(
+            itinerary().departing(
+                "JFK", month=2, day=3,
+            ).arriving(
+                "JNB",
+            ).departing(
+                "JNB", day=6,
+            ).arriving("JFK"),
+            itinerary().departing(
+                "JFK",
+                year=today.year,
+                month=2,
+                day=3,
+            ).arriving("JNB").departing(
+                "JNB",
+                year=today.year,
+                month=2,
+                day=6,
+            ).arriving("JFK"),
         )
 
     def test_itinerary_one_departure_leg(self):

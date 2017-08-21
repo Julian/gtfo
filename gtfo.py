@@ -33,21 +33,14 @@ class _Leg(object):
 
     _departing = attr.ib(default=s())
     _arriving = attr.ib(default=s())
-    _date = attr.ib(default=None)
+    date = attr.ib(default=None)
 
     @property
     def complete(self):
         return self._departing and self._arriving
 
     def departing(self, *airports, **kwargs):
-        kwargs.update(
-            departing=pset(airports),
-            date=_to_date(
-                year=kwargs.pop("year", None),
-                month=kwargs.pop("month", None),
-                day=kwargs.pop("day", None),
-            ),
-        )
+        kwargs.update(departing=pset(airports))
         return attr.evolve(self, **kwargs)
 
     def arriving(self, *airports):
@@ -57,7 +50,7 @@ class _Leg(object):
         if not self._departing:
             raise InvalidSearch(leg=self, message="needs a departing airport")
 
-        date = u"" if self._date is None else self._date.strftime(u"%Y-%m-%d")
+        date = u"" if self.date is None else self.date.strftime(u"%Y-%m-%d")
         return "_".join(
             [u",".join(self._departing), u",".join(self._arriving), date],
         )
@@ -89,6 +82,7 @@ class _RoundtripFlightSearch(object):
         kwargs.update(
             returning=pset(airports),
             returning_on=_to_date(
+                default=self._departing_on,
                 year=kwargs.pop("year", None),
                 month=kwargs.pop("month", None),
                 day=kwargs.pop("day", None),
@@ -129,6 +123,12 @@ class _ItinerarySearch(object):
     open = _open
 
     def departing(self, *airports, **kwargs):
+        kwargs["date"] = _to_date(
+            default=self._legs[len(self._legs) - 1].date,
+            year=kwargs.pop("year", None),
+            month=kwargs.pop("month", None),
+            day=kwargs.pop("day", None),
+        )
         legs, leg = self._with_last_incomplete_leg()
         legs = legs.append(leg.departing(*airports, **kwargs))
         return attr.evolve(self, legs=legs)
@@ -160,7 +160,9 @@ def roundtrip(**kwargs):
     return _RoundtripFlightSearch(**kwargs)
 
 
-def _to_date(year, month, day):
+def _to_date(year, month, day, default=None):
     if year is month is day is None:
         return None
-    return date.today().replace(year=year, month=month, day=day)
+    if default is None:
+        default = date.today()
+    return default.replace(year=year, month=month, day=day)
