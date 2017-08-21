@@ -31,37 +31,6 @@ def _open(self, *airports):
 class _Leg(object):
 
     _departing = attr.ib(default=s())
-    _departing_on = attr.ib(default=None)
-    _returning = attr.ib(default=s())
-    _returning_on = attr.ib(default=None)
-
-    def departing(self, *airports, **kwargs):
-        kwargs.update(
-            departing=pset(airports),
-            departing_on=kwargs.pop("on", None),
-        )
-        return attr.evolve(self, **kwargs)
-
-    def returning(self, *airports, **kwargs):
-        kwargs.update(
-            returning=pset(airports),
-            returning_on=kwargs.pop("on", None),
-        )
-        return attr.evolve(self, **kwargs)
-
-    def parameters(self):
-        yield u"f", u",".join(self._departing)
-        yield u"t", u",".join(self._returning)
-        if self._departing_on is not None:
-            yield u"d", self._departing_on.strftime(u"%Y-%m-%d")
-        if self._returning_on is not None:
-            yield "r", self._returning_on.strftime(u"%Y-%m-%d")
-
-
-@attr.s
-class _ItineraryLeg(object):
-
-    _departing = attr.ib(default=s())
     _arriving = attr.ib(default=s())
     _date = attr.ib(default=None)
 
@@ -89,25 +58,41 @@ class _ItineraryLeg(object):
 @attr.s
 class _RoundtripFlightSearch(object):
 
-    _leg = attr.ib(default=_Leg())
-
     url = _url
     open = _open
 
+    _departing = attr.ib(default=s())
+    _departing_on = attr.ib(default=None)
+    _returning = attr.ib(default=s())
+    _returning_on = attr.ib(default=None)
+
     def departing(self, *airports, **kwargs):
-        return attr.evolve(self, leg=self._leg.departing(*airports, **kwargs))
+        kwargs.update(
+            departing=pset(airports),
+            departing_on=kwargs.pop("on", None),
+        )
+        return attr.evolve(self, **kwargs)
 
     def returning(self, *airports, **kwargs):
-        return attr.evolve(self, leg=self._leg.returning(*airports, **kwargs))
+        kwargs.update(
+            returning=pset(airports),
+            returning_on=kwargs.pop("on", None),
+        )
+        return attr.evolve(self, **kwargs)
 
     def _parameters(self):
-        return self._leg.parameters()
+        yield u"f", u",".join(self._departing)
+        yield u"t", u",".join(self._returning)
+        if self._departing_on is not None:
+            yield u"d", self._departing_on.strftime(u"%Y-%m-%d")
+        if self._returning_on is not None:
+            yield "r", self._returning_on.strftime(u"%Y-%m-%d")
 
 
 @attr.s
 class _ItinerarySearch(object):
 
-    _legs = attr.ib(default=dq(_ItineraryLeg()))
+    _legs = attr.ib(default=dq(_Leg()))
 
     url = _url
     open = _open
@@ -125,7 +110,7 @@ class _ItinerarySearch(object):
     def _with_last_incomplete_leg(self):
         last = self._legs[len(self._legs) - 1]
         if last.complete:
-            return self._legs, _ItineraryLeg()
+            return self._legs, _Leg()
         return self._legs.pop(), last
 
     def _parameters(self):
