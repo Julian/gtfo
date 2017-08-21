@@ -96,6 +96,21 @@ class _RoundtripFlightSearch(object):
         )
         return attr.evolve(self, **kwargs)
 
+    def itinerary(self):
+        return itinerary().departing(
+            *self._departing,
+            year=self._departing_on.year,
+            month=self._departing_on.month,
+            day=self._departing_on.day
+        ).arriving(
+            *self._returning
+        ).departing(
+            *self._returning,
+            year=self._returning_on.year,
+            month=self._returning_on.month,
+            day=self._returning_on.day
+        ).arriving(*self._departing)
+
     def _parameters(self):
         yield u"f", u",".join(self._departing)
         yield u"t", u",".join(self._returning)

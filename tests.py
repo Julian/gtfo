@@ -121,3 +121,19 @@ class TestSearch(TestCase):
         so_far_so_good = itinerary().arriving("JFK")
         with self.assertRaises(InvalidSearch):
             so_far_so_good.url()  # BOOM!
+
+    def test_roundtrip_to_itinerary(self):
+        self.assertEqual(
+            roundtrip().departing(
+                "JFK", year=2017, month=9, day=6,
+            ).returning(
+                "JNB", year=2017, month=10, day=12,
+            ).itinerary(),
+            itinerary().departing(
+                "JFK", year=2017, month=9, day=6,
+            ).arriving(
+                "JNB",
+            ).departing(
+                "JNB", year=2017, month=10, day=12,
+            ).arriving("JFK")
+        )
