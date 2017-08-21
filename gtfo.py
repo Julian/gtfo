@@ -1,3 +1,4 @@
+from datetime import date
 import webbrowser
 
 from hyperlink import URL
@@ -39,7 +40,14 @@ class _Leg(object):
         return self._departing and self._arriving
 
     def departing(self, *airports, **kwargs):
-        kwargs.update(departing=pset(airports), date=kwargs.pop("on", None))
+        kwargs.update(
+            departing=pset(airports),
+            date=_to_date(
+                year=kwargs.pop("year", None),
+                month=kwargs.pop("month", None),
+                day=kwargs.pop("day", None),
+            ),
+        )
         return attr.evolve(self, **kwargs)
 
     def arriving(self, *airports):
@@ -69,14 +77,22 @@ class _RoundtripFlightSearch(object):
     def departing(self, *airports, **kwargs):
         kwargs.update(
             departing=pset(airports),
-            departing_on=kwargs.pop("on", None),
+            departing_on=_to_date(
+                year=kwargs.pop("year", None),
+                month=kwargs.pop("month", None),
+                day=kwargs.pop("day", None),
+            ),
         )
         return attr.evolve(self, **kwargs)
 
     def returning(self, *airports, **kwargs):
         kwargs.update(
             returning=pset(airports),
-            returning_on=kwargs.pop("on", None),
+            returning_on=_to_date(
+                year=kwargs.pop("year", None),
+                month=kwargs.pop("month", None),
+                day=kwargs.pop("day", None),
+            ),
         )
         return attr.evolve(self, **kwargs)
 
@@ -124,3 +140,9 @@ def itinerary(**kwargs):
 
 def roundtrip(**kwargs):
     return _RoundtripFlightSearch(**kwargs)
+
+
+def _to_date(year, month, day):
+    if year is month is day is None:
+        return None
+    return date.today().replace(year=year, month=month, day=day)

@@ -27,27 +27,39 @@ class TestSearch(TestCase):
         )
 
     def test_roundtrip_with_dates(self):
-        departing_on = date(year=2017, month=9, day=6)
-        returning_on = date(year=2017, month=10, day=12)
         self.assertURLIs(
             roundtrip().departing(
-                "JFK", on=departing_on,
+                "JFK", year=2017, month=9, day=6,
             ).returning(
-                "JNB", on=returning_on,
+                "JNB", year=2017, month=10, day=12,
             ), u"https://www.google.com/flights/?f=0&gl=us#search;f=JFK;t=JNB;d=2017-09-06;r=2017-10-12",
         )
 
     def test_roundtrip_departure_date(self):
-        departing_on = date(year=2017, month=9, day=6)
         self.assertURLIs(
-            roundtrip().departing("JFK", on=departing_on).returning("JNB"),
+            roundtrip().departing(
+                "JFK", year=2017, month=9, day=6,
+            ).returning("JNB"),
             u"https://www.google.com/flights/?f=0&gl=us#search;f=JFK;t=JNB;d=2017-09-06",
         )
 
+    def test_roundtrip_partial_date(self):
+        today = date.today()
+        self.assertEqual(
+            roundtrip().departing("JFK", day=6).returning("JNB", month=3),
+            roundtrip().departing(
+                "JFK",
+                year=today.year,
+                month=today.month,
+                day=6,
+            ).returning("JNB", year=today.year, month=3, day=today.day),
+        )
+
     def test_roundtrip_return_date(self):
-        returning_on = date(year=2017, month=9, day=6)
         self.assertURLIs(
-            roundtrip().departing("JFK").returning("JNB", on=returning_on),
+            roundtrip().departing("JFK").returning(
+                "JNB", year=2017, month=9, day=6,
+            ),
             u"https://www.google.com/flights/?f=0&gl=us#search;f=JFK;t=JNB;r=2017-09-06",
         )
 
@@ -66,19 +78,29 @@ class TestSearch(TestCase):
         )
 
     def test_itinerary_with_dates(self):
-        first_leg_date = date(year=2017, month=9, day=5)
-        second_leg_date = date(year=2017, month=9, day=9)
         self.assertURLIs(
             itinerary().departing(
-                "JFK", on=first_leg_date,
+                "JFK", year=2017, month=9, day=5,
             ).arriving(
                 "JNB",
             ).departing(
-                "CPT", on=second_leg_date,
+                "CPT", year=2017, month=9, day=9,
             ).arriving(
                 "JFK", "EWR",
             ),
             u"https://www.google.com/flights/?f=0&gl=us#search;iti=JFK_JNB_2017-09-05*CPT_JFK,EWR_2017-09-09;tt=m",
+        )
+
+    def test_itinerary_partial_date(self):
+        today = date.today()
+        self.assertEqual(
+            itinerary().departing("JFK", day=6).arriving("JNB"),
+            itinerary().departing(
+                "JFK",
+                year=today.year,
+                month=today.month,
+                day=6,
+            ).arriving("JNB"),
         )
 
     def test_itinerary_one_departure_leg(self):
@@ -88,9 +110,10 @@ class TestSearch(TestCase):
         )
 
     def test_itinerary_departure_date(self):
-        departing_on = date(year=2017, month=9, day=6)
         self.assertURLIs(
-            itinerary().departing("JFK", on=departing_on).arriving("JNB"),
+            itinerary().departing(
+                "JFK", year=2017, month=9, day=6,
+            ).arriving("JNB"),
             u"https://www.google.com/flights/?f=0&gl=us#search;iti=JFK_JNB_2017-09-06;tt=m",
         )
 
