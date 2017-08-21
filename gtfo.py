@@ -138,6 +138,9 @@ class _ItinerarySearch(object):
         legs = legs.append(leg.arriving(*airports, **kwargs))
         return attr.evolve(self, legs=legs)
 
+    def pop(self):
+        return attr.evolve(self, legs=self._legs.pop())
+
     def _with_last_incomplete_leg(self):
         last = self._legs[len(self._legs) - 1]
         if last.complete:

@@ -137,3 +137,29 @@ class TestSearch(TestCase):
                 "JNB", year=2017, month=10, day=12,
             ).arriving("JFK")
         )
+
+    def test_itinerary_pop(self):
+        self.assertEqual(
+            itinerary().departing(
+                "JFK", "EWR",
+            ).arriving(
+                "JNB",
+            ).departing(
+                "JNB",
+            ).arriving(
+                "CPT",
+            ).departing(
+                "CPT",
+            ).arriving(
+                "JFK", "EWR",
+            ).pop(),
+            itinerary().departing(
+                "JFK", "EWR",
+            ).arriving(
+                "JNB",
+            ).departing(
+                "JNB",
+            ).arriving(
+                "CPT",
+            ),
+        )
