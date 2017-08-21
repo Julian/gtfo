@@ -212,3 +212,29 @@ class TestSearch(TestCase):
                 "CPT",
             ),
         )
+
+    def test_itinerary_stopover(self):
+        self.assertEqual(
+            itinerary().departing(
+                "JFK", "EWR",
+            ).arriving(
+                "JNB",
+            ).departing(
+                "JNB",
+            ).arriving(
+                "JFK", "EWR",
+            ).stopover("CPT", start_day=20, end_day=21),
+            itinerary().departing(
+                "JFK", "EWR",
+            ).arriving(
+                "JNB",
+            ).departing(
+                "JNB", day=20,
+            ).arriving(
+                "CPT",
+            ).departing(
+                "CPT", day=21,
+            ).arriving(
+                "JFK", "EWR",
+            ),
+        )
