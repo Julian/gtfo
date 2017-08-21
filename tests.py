@@ -223,7 +223,7 @@ class TestSearch(TestCase):
                 "JNB", day=20,
             ).arriving(
                 "JFK", "EWR",
-            ).stopover("CPT"),
+            ).via("CPT"),
             itinerary().departing(
                 "JFK", "EWR",
             ).arriving(
@@ -246,10 +246,10 @@ class TestSearch(TestCase):
             ).arriving(
                 "JNB",
             ).departing(
-                "JNB",
+                "JNB", day=21,
             ).arriving(
                 "JFK", "EWR",
-            ).stopover("CPT", start_day=20, end_day=21),
+            ).via("CPT", day=20),
             itinerary().departing(
                 "JFK", "EWR",
             ).arriving(

@@ -141,21 +141,18 @@ class _ItinerarySearch(object):
     def pop(self):
         return attr.evolve(self, legs=self._legs.pop())
 
-    def stopover(self, *airports, **kwargs):
+    def via(self, *airports, **kwargs):
         last = self._legs[len(self._legs) - 1]
         return self.pop().departing(
             *last._departing,
-            year=kwargs.pop("start_year", None),
-            month=kwargs.pop("start_month", None),
-            day=kwargs.pop("start_day", None)
+            **kwargs
         ).arriving(
             *airports
         ).departing(
             *airports,
-            year=kwargs.pop("end_year", last.date and last.date.year),
-            month=kwargs.pop("end_month", last.date and last.date.month),
-            day=kwargs.pop("end_day", last.date and last.date.day),
-            **kwargs
+            year=last.date and last.date.year,
+            month=last.date and last.date.month,
+            day=last.date and last.date.day
         ).arriving(
             *last._arriving
         )
