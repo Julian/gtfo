@@ -34,7 +34,8 @@ setup(
     setup_requires=["vcversioner>=2.16.0.0"],
     vcversioner={"version_module_paths": ["gtfo/_version.py"]},
 
-    install_requires=["attrs", "hyperlink", "pyrsistent"],
+    install_requires=["attrs", "click", "hyperlink", "pyrsistent"],
+    entry_points={"console_scripts" : ["gtfo = gtfo._cli:main"]},
 
     classifiers=classifiers,
 )
