@@ -20,7 +20,7 @@ BASE = URL.from_text(u"https://www.google.com/flights/?f=0&gl=us")
 
 
 def _url(self):
-    parameters = (u"=".join(each) for each in self._parameters())
+    parameters = (u"=".join((k, v)) for k, v in self._parameters() if v)
     return BASE.replace(fragment=u"search;" + u";".join(parameters))
 
 
@@ -28,12 +28,28 @@ def _open(self, *airports):
     webbrowser.open(self.url().to_text())
 
 
+class _NullDate(object):
+    year = None
+    month = None
+    day = None
+
+    @classmethod
+    def replace(cls, year, month, day):
+        if year is month is day is None:
+            return cls
+        return date.today().replace(year=year, month=month, day=day)
+
+    @classmethod
+    def strftime(cls, *args, **kwargs):
+        return u""
+
+
 @attr.s
 class _Leg(object):
 
     _departing = attr.ib(default=s())
     _arriving = attr.ib(default=s())
-    date = attr.ib(default=None)
+    date = attr.ib(default=_NullDate)
 
     @property
     def complete(self):
@@ -50,9 +66,12 @@ class _Leg(object):
         if not self._departing:
             raise InvalidSearch(leg=self, message="needs a departing airport")
 
-        date = u"" if self.date is None else self.date.strftime(u"%Y-%m-%d")
         return "_".join(
-            [u",".join(self._departing), u",".join(self._arriving), date],
+            [
+                u",".join(self._departing),
+                u",".join(self._arriving),
+                self.date.strftime(u"%Y-%m-%d"),
+            ],
         )
 
 
@@ -63,26 +82,26 @@ class _RoundtripFlightSearch(object):
     open = _open
 
     _departing = attr.ib(default=s())
-    _departing_on = attr.ib(default=None)
+    _departing_on = attr.ib(default=_NullDate)
     _returning = attr.ib(default=s())
-    _returning_on = attr.ib(default=None)
+    _returning_on = attr.ib(default=_NullDate)
 
     def departing(self, *airports, **kwargs):
-        kwargs.update(
+        return attr.evolve(
+            self,
             departing=pset(airports),
-            departing_on=_to_date(
+            departing_on=self._departing_on.replace(
                 year=kwargs.pop("year", None),
                 month=kwargs.pop("month", None),
                 day=kwargs.pop("day", None),
             ),
+            **kwargs
         )
-        return attr.evolve(self, **kwargs)
 
     def returning(self, *airports, **kwargs):
         kwargs.update(
             returning=pset(airports),
-            returning_on=_to_date(
-                default=self._departing_on,
+            returning_on=self._returning_on.replace(
                 year=kwargs.pop("year", None),
                 month=kwargs.pop("month", None),
                 day=kwargs.pop("day", None),
@@ -115,10 +134,8 @@ class _RoundtripFlightSearch(object):
     def _parameters(self):
         yield u"f", u",".join(self._departing)
         yield u"t", u",".join(self._returning)
-        if self._departing_on is not None:
-            yield u"d", self._departing_on.strftime(u"%Y-%m-%d")
-        if self._returning_on is not None:
-            yield "r", self._returning_on.strftime(u"%Y-%m-%d")
+        yield u"d", self._departing_on.strftime(u"%Y-%m-%d")
+        yield "r", self._returning_on.strftime(u"%Y-%m-%d")
 
 
 @attr.s
@@ -130,15 +147,20 @@ class _ItinerarySearch(object):
     open = _open
 
     def departing(self, *airports, **kwargs):
-        kwargs["date"] = _to_date(
-            default=self._legs[len(self._legs) - 1].date,
-            year=kwargs.pop("year", None),
-            month=kwargs.pop("month", None),
-            day=kwargs.pop("day", None),
-        )
         legs, leg = self._with_last_incomplete_leg()
-        legs = legs.append(leg.departing(*airports, **kwargs))
-        return attr.evolve(self, legs=legs)
+        return attr.evolve(
+            self, legs=legs.append(
+                leg.departing(
+                    *airports,
+                    date=self._legs[len(self._legs) - 1].date.replace(
+                        year=kwargs.pop("year", None),
+                        month=kwargs.pop("month", None),
+                        day=kwargs.pop("day", None),
+                    ),
+                    **kwargs
+                ),
+            ),
+        )
 
     def arriving(self, *airports, **kwargs):
         legs, leg = self._with_last_incomplete_leg()
@@ -157,9 +179,9 @@ class _ItinerarySearch(object):
             *airports
         ).departing(
             *airports,
-            year=last.date and last.date.year,
-            month=last.date and last.date.month,
-            day=last.date and last.date.day
+            year=last.date.year,
+            month=last.date.month,
+            day=last.date.day
         ).arriving(
             *last._arriving
         )
@@ -173,11 +195,3 @@ class _ItinerarySearch(object):
     def _parameters(self):
         yield u"iti", u"*".join(leg.parameters() for leg in self._legs)
         yield u"tt", u"m"  # TODO: What is this?
-
-
-def _to_date(year, month, day, default=None):
-    if year is month is day is None:
-        return None
-    if default is None:
-        default = date.today()
-    return default.replace(year=year, month=month, day=day)
