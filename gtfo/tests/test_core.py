@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from hyperlink import URL
 
-from gtfo import InvalidSearch, itinerary, roundtrip
+from gtfo.core import InvalidSearch, itinerary, roundtrip
 
 
 class TestSearch(TestCase):
