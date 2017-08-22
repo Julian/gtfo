@@ -12,6 +12,12 @@ Save me...
 Usage
 -----
 
+.. code-block:: sh
+
+    $ gtfo JFK JNB
+
+or
+
 .. code-block:: python
 
     from gtfo import roundtrip
