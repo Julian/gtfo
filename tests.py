@@ -264,3 +264,13 @@ class TestSearch(TestCase):
                 "JFK", "EWR",
             ),
         )
+
+    def test_roundtrip_reverse(self):
+        self.assertEqual(
+            roundtrip().departing(
+                "JFK", month=3, day=4,
+            ).returning("JNB").reversed(),
+            roundtrip().departing(
+                "JNB", month=3, day=4,
+            ).returning("JFK"),
+        )

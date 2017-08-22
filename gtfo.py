@@ -105,6 +105,13 @@ class _RoundtripFlightSearch(object):
             day=self._returning_on.day
         ).arriving(*self._departing)
 
+    def reversed(self):
+        return attr.evolve(
+            self,
+            departing=self._returning,
+            returning=self._departing,
+        )
+
     def _parameters(self):
         yield u"f", u",".join(self._departing)
         yield u"t", u",".join(self._returning)
