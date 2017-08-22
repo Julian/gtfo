@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from hyperlink import URL
 
-from gtfo.core import InvalidSearch, itinerary, roundtrip
+from gtfo import core, itinerary, roundtrip
 
 
 class TestSearch(TestCase):
@@ -168,7 +168,7 @@ class TestSearch(TestCase):
 
     def test_itinerary_cannot_skip_departure(self):
         so_far_so_good = itinerary().arriving("JFK")
-        with self.assertRaises(InvalidSearch):
+        with self.assertRaises(core.InvalidSearch):
             so_far_so_good.url()  # BOOM!
 
     def test_roundtrip_to_itinerary(self):

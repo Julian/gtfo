@@ -91,7 +91,7 @@ class _RoundtripFlightSearch(object):
         return attr.evolve(self, **kwargs)
 
     def itinerary(self):
-        return itinerary().departing(
+        return _ItinerarySearch().departing(
             *self._departing,
             year=self._departing_on.year,
             month=self._departing_on.month,
@@ -173,14 +173,6 @@ class _ItinerarySearch(object):
     def _parameters(self):
         yield u"iti", u"*".join(leg.parameters() for leg in self._legs)
         yield u"tt", u"m"  # TODO: What is this?
-
-
-def itinerary(**kwargs):
-    return _ItinerarySearch(**kwargs)
-
-
-def roundtrip(**kwargs):
-    return _RoundtripFlightSearch(**kwargs)
 
 
 def _to_date(year, month, day, default=None):
