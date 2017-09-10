@@ -63,7 +63,7 @@ class _Leg(object):
     def description(self):
         return "{departing} -{date}> {arriving}".format(
             departing=", ".join(self._departing),
-            date=self.date or "",
+            date=self.date.strftime("(%Y-%m-%d)-"),
             arriving=", ".join(self._arriving),
         )
 
