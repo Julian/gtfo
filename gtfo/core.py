@@ -33,10 +33,12 @@ class _NullDate(object):
     month = None
     day = None
 
-    @classmethod
-    def replace(cls, year, month, day):
+    def __nonzero__(self):
+        return False
+
+    def replace(self, year, month, day):
         if year is month is day is None:
-            return cls
+            return self
         return date.today().replace(year=year, month=month, day=day)
 
     @classmethod
@@ -44,12 +46,26 @@ class _NullDate(object):
         return u""
 
 
-@attr.s
+_NO_DATE = _NullDate()
+
+
+@attr.s(repr=False)
 class _Leg(object):
 
     _departing = attr.ib(default=s())
     _arriving = attr.ib(default=s())
-    date = attr.ib(default=_NullDate)
+    date = attr.ib(default=_NO_DATE)
+
+    def __repr__(self):
+        return "<" + self.description + ">"
+
+    @property
+    def description(self):
+        return "{departing} -{date}> {arriving}".format(
+            departing=", ".join(self._departing),
+            date=self.date or "",
+            arriving=", ".join(self._arriving),
+        )
 
     @property
     def complete(self):
@@ -82,9 +98,9 @@ class _RoundtripFlightSearch(object):
     open = _open
 
     _departing = attr.ib(default=s())
-    _departing_on = attr.ib(default=_NullDate)
+    _departing_on = attr.ib(default=_NO_DATE)
     _returning = attr.ib(default=s())
-    _returning_on = attr.ib(default=_NullDate)
+    _returning_on = attr.ib(default=_NO_DATE)
 
     def departing(self, *airports, **kwargs):
         return attr.evolve(
@@ -138,13 +154,16 @@ class _RoundtripFlightSearch(object):
         yield "r", self._returning_on.strftime(u"%Y-%m-%d")
 
 
-@attr.s
+@attr.s(repr=False)
 class _ItinerarySearch(object):
 
     _legs = attr.ib(default=dq(_Leg()))
 
     url = _url
     open = _open
+
+    def __repr__(self):
+        return "<" + "; ".join(leg.description for leg in self._legs) + ">"
 
     def departing(self, *airports, **kwargs):
         legs, leg = self._with_last_incomplete_leg()
