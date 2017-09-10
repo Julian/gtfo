@@ -162,6 +162,9 @@ class _ItinerarySearch(object):
     url = _url
     open = _open
 
+    def __len__(self):
+        return len(self._legs)
+
     def __repr__(self):
         return "<" + "; ".join(leg.description for leg in self._legs) + ">"
 

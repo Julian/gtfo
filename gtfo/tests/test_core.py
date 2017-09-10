@@ -274,3 +274,19 @@ class TestSearch(TestCase):
                 "JNB", month=3, day=4,
             ).returning("JFK"),
         )
+
+    def test_itinerary_length(self):
+        self.assertEqual(
+            len(
+                itinerary().departing(
+                    "JFK", "EWR",
+                ).arriving(
+                    "JNB",
+                ).departing(
+                    "JNB", day=21,
+                ).arriving(
+                    "JFK", "EWR",
+                ),
+            ),
+            2,
+        )
